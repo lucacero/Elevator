@@ -30,20 +30,52 @@ public class Client {
         List<Person> waitingPeople = new ArrayList<>();
         int personId = 1;
 
-        for (int i = 0; i < numFloors; i++) {
-            System.out.println("Enter the number of people waiting on floor " + i + ":");
-            int numPeople = scanner.nextInt();
+        if (numFloors < 10) {
+            // Fewer than 10 floors: Ask how many passengers on each floor
+            for (int i = 0; i < numFloors; i++) {
+                System.out.println("Enter the number of people waiting on floor " + i + ":");
+                int numPeople = scanner.nextInt();
 
-            for (int j = 0; j < numPeople; j++) {
-                System.out.println("Enter the destination floor for person " + personId + ":");
-                int destinationFloor = scanner.nextInt();
+                for (int j = 0; j < numPeople; j++) {
+                    System.out.println("Enter the destination floor for person " + personId + ":");
+                    int destinationFloor = scanner.nextInt();
 
-                while (destinationFloor < 0 || destinationFloor >= numFloors || destinationFloor == i) {
-                    System.out.println("Invalid destination. Enter a floor between 0 and " + (numFloors - 1) + ", different from their current floor:");
-                    destinationFloor = scanner.nextInt();
+                    while (destinationFloor < 0 || destinationFloor >= numFloors || destinationFloor == i) {
+                        System.out.println("Invalid destination. Enter a floor between 0 and " + (numFloors - 1) + ", different from their current floor:");
+                        destinationFloor = scanner.nextInt();
+                    }
+
+                    waitingPeople.add(new Person(personId++, i, destinationFloor));
+                }
+            }
+        } else {
+            // 10+ floors: Ask which floors have passengers
+            System.out.println("Enter the floors that have passengers (separate by space, e.g., '1 3 5'):");
+            scanner.nextLine(); // Consume the newline character
+            String[] floorsWithPassengers = scanner.nextLine().split(" ");
+
+            for (String floor : floorsWithPassengers) {
+                int currentFloor = Integer.parseInt(floor);
+
+                if (currentFloor < 0 || currentFloor >= numFloors) {
+                    System.out.println("Floor " + currentFloor + " is invalid. Skipping.");
+                    continue;
                 }
 
-                waitingPeople.add(new Person(personId++, i, destinationFloor));
+                System.out.println("Enter the number of people waiting on floor " + currentFloor + ":");
+                int numPeople = scanner.nextInt();
+
+                for (int j = 0; j < numPeople; j++) {
+                    System.out.println("Enter the destination floor for person " + personId + ":");
+                    int destinationFloor = scanner.nextInt();
+
+                    while (destinationFloor < 0 || destinationFloor >= numFloors || destinationFloor == currentFloor) {
+                        System.out.println("Invalid destination. Enter a floor between 0 and " + (numFloors - 1) + ", different from their current floor:");
+                        destinationFloor = scanner.nextInt();
+                    }
+
+                    waitingPeople.add(new Person(personId++, currentFloor, destinationFloor));
+                }
             }
         }
 
@@ -61,6 +93,7 @@ public class Client {
 
         String mostEfficientStrategy = findMostEfficientStrategy(elevator, waitingPeople);
 
+        System.out.println("Executing strategy: " + strategy.toUpperCase());
         elevator.executeStrategy(waitingPeople, strategy);
 
         provideFeedback(strategy.toLowerCase(), mostEfficientStrategy);
